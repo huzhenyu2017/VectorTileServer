@@ -1,0 +1,16 @@
+{
+	"appenders": {
+		"out":{ "type": "console" },
+		"app":{ 
+			"type": "dateFile", 
+			"filename": "logs/access.log",
+			"pattern": "-yyyy-MM-dd",
+            "alwaysIncludePattern": true,
+            "maxLogSize":1024000,
+      		"backups":4
+		}
+	},
+	"categories": {
+		"default": { "appenders": [ "out", "app" ], "level": "info" }
+	}
+}

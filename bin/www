@@ -1,0 +1,93 @@
+#!/usr/bin/env node
+// www文件也是一个node的脚本，用于分离配置和启动程序
+
+/**
+ * 依赖加载.
+ */
+
+var app = require('../app.js');
+var config = require('../config.js');
+var debug = require('debug')('TileServer:server');
+var http = require('http');
+var log = require("../log").logger("main");//调用log->log.info("...")
+/**
+ * 定义启动端口.
+ */
+
+var port = normalizePort(config.PORT);
+app.set('port', port);
+
+/**
+ * 创建HTTP服务器实例.
+ */
+// 这里用app.listen(port)也可以完成启动监听端口,app本质上是一个函数function(req,res){},其同时具备一个listen属性
+// app.listen = function (port) {
+//   http.createServer(this).listen(port);
+// }; 
+var server = http.createServer(app);//利用原生http生成server可以使用其相关方法,如on()等;而使用app.listen(port)则不能
+
+/**
+ * 启动网络服务监听端口.
+ */
+server.listen(port,config.IPADDRESS, function() {
+	log.info('TileServer on http://%s:%s',config.IPADDRESS, port);
+});
+server.on('error', onError);
+server.on('listening', onListening);
+
+/**
+ * 端口标准化函数
+ */
+
+function normalizePort(val) {
+  var port = parseInt(val, 10);
+  if (isNaN(port)) {
+    // named pipe
+    return val;
+  }
+  if (port >= 0) {
+    // port number
+    return port;
+  }
+  return false;
+}
+
+/**
+ * HTTP异常事件处理函数.
+ */
+
+function onError(error) {
+  if (error.syscall !== 'listen') {
+    throw error;
+  }
+
+  var bind = typeof port === 'string'
+    ? 'Pipe ' + port
+    : 'Port ' + port;
+
+  // handle specific listen errors with friendly messages
+  switch (error.code) {
+    case 'EACCES':
+      log.error(bind + ' requires elevated privileges');
+      process.exit(1);
+      break;
+    case 'EADDRINUSE':
+      log.error(bind + ' is already in use');
+      process.exit(1);
+      break;
+    default:
+      throw error;
+  }
+}
+
+/**
+ * 监听事件绑定函数.
+ */
+
+function onListening() {
+  var addr = server.address();
+  var bind = typeof addr === 'string'
+    ? 'pipe ' + addr
+    : 'port ' + addr.port;
+  debug('Listening on ' + bind);
+}

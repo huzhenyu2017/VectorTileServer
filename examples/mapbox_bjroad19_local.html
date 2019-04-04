@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <meta charset='utf-8' />
+   <title>Display a map</title>
+   <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+   <script src='scripts/mapbox-gl.js'></script>;
+   <link href='css/mapbox-gl.css' rel='stylesheet' />
+   <style>
+       body { margin:0; padding:0; }
+       #map { position:absolute; top:0; bottom:0; width:100%; }
+   </style>
+</head>
+<body>
+<div id='map'></div>
+<script>
+   //使用注册Mapbox时候后台自动生成的token
+   mapboxgl.accessToken = 'pk.eyJ1IjoiaHViZXJ0MTYxMTE2IiwiYSI6ImNpdmtubmo5NjAwN3AydHBrbzFtcW5sNHgifQ.FKAYZ8hWCPLxiX9iejQ3ew';
+   var simple = {
+			"version": 8,
+            "sources": {
+				 "composite": {
+                    "url": "mapbox://mapbox.mapbox-terrain-v6",//v6不存在,这样可以不加载出logo
+                    "type": "vector"
+                },
+                "bjroads": {
+                    "type": "vector",
+                    "tiles": [
+                        "http://localhost:8000/tiles-bjroad3857-vector/{z}/{x}/{y}.pbf"
+                    ],
+					maxzoom: 19
+                },
+				"points": {  
+					"type": "geojson", 
+					"data": { 
+						"type": "FeatureCollection", 
+						"features": [
+							{ 
+								"type": "Feature",
+								"geometry": { 
+									"type": "Point", 
+									"coordinates": [116.566, 40.035] 
+								}, 
+								"properties": { 
+									"title": "Mapbox DC 中文", 
+									"icon": "monument" 
+								
+								}
+							},
+							{ 
+								"type": "Feature", 
+								"geometry": { 
+									"type": "Point", 
+									"coordinates": [116.006, 40.035] 
+								}, 
+								"properties": { 
+									"title": "Mapbox SF", 
+									"icon": "harbor" 
+								} 
+							}
+						]
+					},
+					maxzoom: 19						
+				}	
+			},
+			"sprite": "http://localhost:8000/sprite/sprite",
+			//放在IIS中,需要设置MIME类型,支持.pbf格式才能访问字体(MIME:application/x-protobuf)
+            "glyphs": "http://localhost:8000/fonts/{fontstack}/{range}.pbf",
+            "layers": [
+                {
+                    "id": "background",
+                    "type": "background",
+                    "paint": {
+                        "background-color": "#ffffff"
+                    },
+                    "interactive": true
+                },
+                {
+					'id': 'bjroad_normal_line_id',
+					'type': 'line',
+					'source': 'bjroads',
+					'source-layer': 'BJ_LN_3857',
+					   'layout': {
+						   'line-join': 'round',
+						   'line-cap': 'round'
+					   },
+					   'paint': {
+						   "line-color": "#0000ff",
+						   "line-width": 1
+					   }
+                },        
+				{  
+					"id": "points",  
+					"type": "symbol",  
+					"source": "points",  
+					"layout": {  
+						"icon-image": "{icon}-15",  
+						"text-field": "{title}",  
+						"text-font": ["YaHei"],  
+						"text-offset": [0, 0.6],  
+						"text-anchor": "top"  
+					}  
+				}
+			]
+	}
+   
+   var map = new mapboxgl.Map({
+       container: 'map', // 放置的div的id
+       style: simple, // mapbox后台生成的style样式
+       center: [116.466, 40.015],// 地图显示中心点位置
+       zoom: 8,// 开始的缩放级别
+       maxZoom: 19,
+	   attributionControl: false
+   });
+   map.addControl(new mapboxgl.NavigationControl(),'top-left');
+   //map.addControl(new mapboxgl.AttributionControl({compact: false}));
+   map.addControl(new mapboxgl.ScaleControl({
+		maxWidth: 80,
+		unit: 'metric'
+   }));
+</script>
+</body>
+</html>
